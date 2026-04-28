@@ -1,0 +1,290 @@
+---
+title: "Intro to R for Healthcare Analytics"
+author: "Vafa Saboori"
+output: html_document
+---
+
+## Libraries (Packages) 
+
+```{r Libraries, message=FALSE, warning=FALSE}
+library(tibble)  # Modern dataframes
+library(readr)  # Imports and exports spreadsheet files
+library(dplyr)  # Tidy data analysis
+library(DT)  # Displays HTML tables
+```
+
+## Simple arithmetic
+
+```{r Arithmatics}
+2 + 2 + 4 - 5
+2 * 4 * 3
+3 / 4
+3 ^ 3 # The sign is called the caret symbol.
+```
+
+## Lists
+
+```{r List of Systolic Blood Pressures (numerical)}
+c(120, 120, 110, 130, 140)
+```
+
+```{r List of diseases (strings)}
+c("Pneumonia", "ARDS", "Chronic bronchitis")
+```
+
+## Computer variables (objects)
+
+```{r Systolic blood pressure}
+sbp <- c(120, 120, 110, 130, 140)
+sbp # calling the sbp list object
+```
+
+```{r A sequence}
+patient.number <- seq(from =1,
+                      to = 100,
+                      by = 2)
+patient.number # call the above list
+```
+
+## Addressing
+
+```{r Addressing}
+sbp[1] # First systolic Blood Pressure
+sbp[1:3] # First three systolic blood pressures
+sbp[c(1,3)] # First and thirs systolic blood pressures
+```
+
+## Distributions
+
+```{r Uniform Distribution}
+set.seed(123) # Forces a specific selection of values
+age <- sample(18:85,
+              500,
+              replace = TRUE)
+age # print or call all age values
+hist(age)
+```
+
+```{r Standard normal distribution}
+set.seed(123) # Forces a specific selection of values
+before.after <- rnorm(500) # difference in Cholesterol levels before after drug
+before.after # print or call all values
+```
+
+```{r Normal distribution}
+set.seed(123) # Forces a specific selection of values
+sbp <- round(rnorm(500,
+                   mean = 120,
+                   sd = 20),
+             digits = 0)
+sbp # print or call all values
+hist(sbp)
+```
+
+```{r Chi-squared distribution}
+set.seed(123) # Forces a specific selection of values
+crp <- round(rchisq(500, # C-Reactive Protein (CRP)
+                    df = 2),
+             digits = 1)
+crp # print or call all values
+hist(crp)
+```
+
+```{r Random choice}
+set.seed(123)
+group <- sample(c("Control",
+                  "Placebo"), # patient in control or placebo group
+                500,
+                replace = TRUE)
+group # print or call all values
+```
+
+```{r Random choice with weights}
+set.seed(123)
+side.effects <- sample(c("No", 
+                         "Yes"), # experienced side effects
+                       500,
+                       replace = TRUE,
+                       prob = c(0.8,
+                                0.2))
+side.effects # print or call all values
+```
+
+## Descriptive statistics
+
+```{r Descriptive Statistics (age)}
+mean(age)
+median(age)
+var(age)
+sd(age)
+range(age)
+IQR(age)
+quantile(age, 0.25) # first quartile
+quantile(age, 0.75) # third quartile
+```
+
+```{r Summary of age}
+summary(age) # all descriptive statistics
+```
+
+```{r Sample space of group variable}
+unique(group)
+```
+
+## Data visualization
+
+### Box-and-whisker plot
+
+```{r Box plot}
+boxplot(age)
+```
+
+```{r Box plot with title, axes labels, color}
+boxplot(age,
+        col = "coral",
+        main = "Patient age",
+        xlab = "Patients",
+        ylab = "Age")
+```
+
+### Histogram
+
+```{r Histogram of before.after}
+hist(before.after,
+     col = "gold",
+     main = "Difference in measurement before and after treatment",
+     xlab = "Measurement",
+     ylab = "Counts")
+```
+
+### Scatter plot
+
+```{r Scatter plot of numerical pairs}
+plot(age,
+     sbp,
+     col = "forestgreen",
+     main = "Age vs systolic blood pressure",
+     xlab = "Age",
+     ylab = "Systolic blood pressure")
+```
+
+## Tibbles
+
+### Creating a tibble
+
+```{r Creating a tibble from the data}
+my.data <- tibble(Age = age,
+                  Difference = before.after,
+                  CRP = crp,
+                  Group = group,
+                  sBP = sbp,
+                  SideEffects = side.effects)
+```
+
+### Exporting a tibble
+
+```{r Exporting the tibble as a csv file}
+write_csv(my.data,
+          "Data.csv") 
+```
+
+```{r Importing dataset, message=FALSE, warning=FALSE}
+data <- read_csv("ProjectData.csv")
+```
+
+## Inspecting the data
+
+```{r Data table}
+datatable(data) # DT library (package) formats the data very nicely.
+```
+
+## Selection
+
+```{r Create new tibble of control group}
+control.group <- filter(data, Group == "I")
+```
+
+```{r Patients younger than 50}
+younger.patients <- filter(data, Age < 50)
+```
+
+```{r Only sBP and CRP for younger patients}
+younger.patients.select <- select(
+                                  filter(data, Age < 50), 
+                                  sBP, CRP)
+```
+
+```{r Younger patients in group I}
+younger.patients.I <- filter(data, Age < 50 & Group == "I")
+```
+
+## Descriptive statistics of the new data
+
+### Age by group
+
+```{r Mean age by group}
+data %>% 
+  group_by(Group) %>% 
+  summarise(mean.age = mean(Age))
+```
+
+### Side-effect count
+
+```{r Counting side-effects}
+data %>% 
+  group_by(SideEffects) %>% 
+  summarise(count = n())
+```
+
+### Side effects count by group
+
+```{r Side-effects count by group }
+data %>% 
+  group_by(Group) %>% 
+  count(SideEffects)
+```
+
+## Visualizing the new data
+
+### Box plot of age by group
+
+```{r Box plot of age given the group}
+boxplot(Age ~ Group,
+        data = data,
+        col = c("deepskyblue", "orange"),
+        main = "Age distribution by group",
+        xlab = "Group",
+        ylab = "Age",
+        las = 1)
+```
+
+```{r Scatter plot of systolic BP given the age}
+plot(sBP ~ Age, # Dependent Variable first, Independent Variable next
+     data = data,
+     col = "blue",
+     main = "Age vs systolic blood pressure",
+     xlab = "Age",
+     ylab = "Systolic blood pressure",
+     las = 1)
+```
+
+## Inferential statistics
+
+### Student's *t* test
+
+```{r Student t test}
+t.test(sBP ~ Group, # Compares the mean of sBP between group I and II
+       data)
+```
+
+### Linear regression
+
+```{r Predicting systolic blood pressure given age}
+summary(lm(sBP ~ Age,
+           data = data))
+```
+
+```{r Predicting systolic blood pressure given age + CRP}
+summary(lm(sBP ~ Age + CRP,
+           data = data))
+```

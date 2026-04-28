@@ -1,0 +1,153 @@
+---
+title: "Time Series Analysis"
+subtitle: "Incoming Examinations at Fargo Health Center"
+author: "Vafa Saboori, PhD"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Introduction
+
+This report analyzes the number of incoming examinations at Fargo Health Center in Abbeville, LA from January 2006 to December 2013. We will visualize the data and then apply three different time series models to determine which model provides the best fit.
+
+## Data
+
+The data consists of monthly counts of incoming examinations. We will import the data from a CSV file named `BAB268-XLS-ENG (Clean).csv`.
+
+```{r load-libraries}
+# Load necessary libraries
+library(forecast)
+library(tseries)
+library(readr)
+```
+
+```{r import-data}
+# Import the data
+data <- read_csv("BAB268-XLS-ENG (Clean).csv")
+
+# Convert the Date column to Date type
+data$Date <- as.Date(data$Date, format = "%m/%d/%y")
+
+# Display the first few rows of the data
+head(data)
+
+```
+
+## Visualization
+
+We will visualize the incoming examinations over time.
+
+```{r plot-data}
+# Plot the data using base R
+plot(data$Date, data$IncomingExaminations, type = "l", # line
+     main = "Incoming Examinations at Fargo Health Center", 
+     xlab = "Date", ylab = "Incoming Examinations", 
+     col = "blue", lwd = 2)
+
+# Add grid lines
+grid()
+
+```
+
+## Time Series Models
+
+### Model 1: ARIMA
+
+ARIMA (AutoRegressive Integrated Moving Average) is a popular time series forecasting model.
+
+```{r fit-arima}
+# Fit ARIMA model
+ts_data <- ts(data$IncomingExaminations, start = c(2006, 1), frequency = 12)
+fit_arima <- auto.arima(ts_data)
+
+# Forecast using ARIMA
+forecast_arima <- forecast(fit_arima, h = 12)
+
+# Display the forecasted values
+forecast_arima
+```
+
+# Plot ARIMA fit
+
+```{r Plot ARIMA fit}
+plot(forecast_arima, 
+     main = "ARIMA Model Fit", 
+     xlab = "Date", 
+     ylab = "Incoming Examinations")
+```
+
+### Model 2: Exponential Smoothing (ETS)
+
+ETS (Error, Trend, Seasonal) is another common approach for forecasting time series data.
+
+```{r fit-ets}
+# Fit ETS model
+fit_ets <- ets(ts_data)
+
+# Forecast using ETS
+forecast_ets <- forecast(fit_ets, h = 12)
+
+# Display the forecasted values
+forecast_ets
+```
+
+# Plot ETS fit
+
+```{r Plot ETS Fit}
+plot(forecast_ets, 
+     main = "ETS Model Fit", 
+     xlab = "Date", 
+     ylab = "Incoming Examinations")
+```
+
+### Model 3: Seasonal Decomposition of Time Series (STL)
+
+STL (Seasonal and Trend decomposition) is a method for decomposing time series data into seasonal, trend, and remainder components.
+
+```{r fit-stl}
+# Fit STL model
+fit_stl <- stl(ts_data, 
+               s.window = "periodic") # seasonal component estimated as periodic function.
+
+# Forecast using STL
+forecast_stl <- forecast(fit_stl, h = 12)
+
+# Display the forecasted values
+forecast_stl
+```
+
+# Plot STL fit
+
+```{r Plot STL fit}
+plot(forecast_stl, 
+     main = "STL Model Fit", 
+     xlab = "Date", 
+     ylab = "Incoming Examinations", 
+     col = "blue", lwd = 2)
+```
+
+## Model Comparison
+
+We will compare the three models based on their accuracy metrics: Mean Absolute Error (MAE), Root Mean Squared Error (RMSE), and Mean Absolute Percentage Error (MAPE).
+
+```{r model-comparison}
+# Calculate accuracy metrics for each model
+accuracy_arima <- accuracy(forecast_arima)
+accuracy_ets <- accuracy(forecast_ets)
+accuracy_stl <- accuracy(forecast_stl)
+
+accuracy_arima 
+accuracy_ets
+accuracy_stl 
+```
+
+## Conclusion
+
+Based on the accuracy metrics, we can determine which model provides the best fit for the data. The model with the lowest MAE, RMSE, and MAPE values is considered the best.
+
+From the results, it appears that the STL (Seasonal and Trend decomposition) model is the best fit for forecasting incoming examinations at Fargo Health Center.
+
+\`\`\`

@@ -1,0 +1,57 @@
+---
+title: "Introduction"
+author: "Vafa Saboori"
+output: html_document
+---
+
+
+# Introduction to RMarkdown
+
+## Analysis of the esoph dataset in R
+
+
+Adding R Code Chunks
+Enclose code in three backticks and curly braces: 
+     
+```{r}
+     data(esoph)
+```
+
+```{r}
+     ?esoph # Data from a case-control study of (o)esophageal cancer in Ille-et-Vilaine, France.
+```
+
+```{r}
+     str(esoph)
+     summary(esoph)
+     pairs(esoph)
+     plot(esoph)
+     hist(esoph$ncases)
+     boxplot(esoph$ncases ~ esoph$agegp)
+```
+
+Running Code Chunks
+Click the green "Run" button or use `Knit` to execute and render the document.
+
+Customizing the Output
+Echo and Evaluation Options:
+   echo=FALSE: Runs the code but does not show the code.
+   eval=FALSE: Prevents the code from being evaluated.
+   include=FALSE: Runs the code but doesn’t show the code or results.
+   
+```{r, echo=FALSE} 
+     data(esoph)
+     str(esoph)
+     summary(esoph)
+     pairs(esoph)
+     plot(esoph)
+     hist(esoph$ncases)
+     boxplot(esoph$ncases ~ esoph$agegp)
+```
+
+
+Saving and Sharing
+Save the document.
+Use `Knit` to render the document, usually as HTML.
+Review the HTML output.
+Share the `.Rmd` file with others for reproducibility.
