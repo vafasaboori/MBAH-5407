@@ -52,6 +52,34 @@ grid()
 
 ```
 
+## Simple Trend Models
+
+Before applying time series forecasting models, we will fit several simple trend models to examine the overall pattern in the data.
+
+```{r}
+# Create a time index
+data$t <- 1:nrow(data)
+
+# Fit trend models
+fit_linear <- lm(IncomingExaminations ~ t, data = data)
+fit_quad   <- lm(IncomingExaminations ~ t + I(t^2), data = data)
+fit_cube   <- lm(IncomingExaminations ~ t + I(t^2) + I(t^3), data = data)
+fit_exp    <- lm(log(IncomingExaminations) ~ t, data = data)
+
+# Compare models
+summary(fit_linear)
+summary(fit_quad)
+summary(fit_cube)
+summary(fit_exp)
+
+# Visualize models
+plot(data$t, data$IncomingExaminations); lines(fitted(fit_linear), col="blue")
+plot(data$t, data$IncomingExaminations); lines(fitted(fit_quad), col="red")
+plot(data$t, data$IncomingExaminations); lines(fitted(fit_cube), col="green")
+plot(data$t, data$IncomingExaminations); lines(exp(fitted(fit_exp)), col="purple")
+```
+
+
 ## Time Series Models
 
 ### Model 1: ARIMA
@@ -63,7 +91,7 @@ ARIMA (AutoRegressive Integrated Moving Average) is a popular time series foreca
 ts_data <- ts(data$IncomingExaminations, start = c(2006, 1), frequency = 12)
 fit_arima <- auto.arima(ts_data)
 
-# Forecast using ARIMA
+# Forecast 12 months ahead using ARIMA
 forecast_arima <- forecast(fit_arima, h = 12)
 
 # Display the forecasted values
@@ -87,7 +115,7 @@ ETS (Error, Trend, Seasonal) is another common approach for forecasting time ser
 # Fit ETS model
 fit_ets <- ets(ts_data)
 
-# Forecast using ETS
+# Forecast 12 months using ETS
 forecast_ets <- forecast(fit_ets, h = 12)
 
 # Display the forecasted values
@@ -110,7 +138,14 @@ STL (Seasonal and Trend decomposition) is a method for decomposing time series d
 ```{r fit-stl}
 # Fit STL model
 fit_stl <- stl(ts_data, 
-               s.window = "periodic") # seasonal component estimated as periodic function.
+               s.window = "periodic") 
+# seasonal component estimated as periodic function.
+# "periodic" assumes the seasonal pattern repeats identically each year.
+
+
+# Visualize STL decomposition
+plot(fit_stl,
+     main = "STL Decomposition of Incoming Examinations")
 
 # Forecast using STL
 forecast_stl <- forecast(fit_stl, h = 12)
@@ -149,5 +184,3 @@ accuracy_stl
 Based on the accuracy metrics, we can determine which model provides the best fit for the data. The model with the lowest MAE, RMSE, and MAPE values is considered the best.
 
 From the results, it appears that the STL (Seasonal and Trend decomposition) model is the best fit for forecasting incoming examinations at Fargo Health Center.
-
-\`\`\`
